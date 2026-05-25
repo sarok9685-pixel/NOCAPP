@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0d0d0d" />
+  <meta name="description" content="حاسبة استحقاقات - شركة نفط الشمال" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="شركة نفط الشمال" />
+  <title>حاسبة الاستحقاق والتقاعد - شركة نفط الشمال</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0d0d0d; }
+    #root { min-height: 100vh; }
+    .install-bar {
+      position: fixed; bottom: 80px; left: 12px; right: 12px;
+      background: linear-gradient(135deg,#1a3a1a,#0a2a0a);
+      border: 1px solid #4CAF50; border-radius: 16px;
+      padding: 14px 16px; z-index: 9999;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 8px 32px rgba(76,175,80,0.25);
+      animation: slideUp .3s ease;
+    }
+    @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    .install-bar .msg { flex: 1; color: #e8e8e8; font-size: 13px; direction: rtl; font-family: 'Noto Sans Arabic', sans-serif; }
+    .install-bar .msg strong { color: #4CAF50; display: block; margin-bottom: 2px; font-size: 14px; }
+    .install-bar .ibtn { background: #4CAF50; color: #fff; border: none; border-radius: 10px; padding: 8px 16px; font-size: 13px; cursor: pointer; font-weight: 700; white-space: nowrap; }
+    .install-bar .xbtn { background: none; border: none; color: #666; font-size: 20px; cursor: pointer; line-height: 1; }
+  </style>
+
+  <script>
+    // Inline manifest for Android PWA
+    const manifestBlob = new Blob([JSON.stringify({
+  "name": "حاسبة استحقاقات - نفط الشمال",
+  "short_name": "نفط الشمال",
+  "description": "حاسبة استحقاقات شركة نفط الشمال",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0d0d0d",
+  "theme_color": "#4CAF50",
+  "orientation": "portrait",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%234CAF50'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-size='100' fill='white'%3E%F0%9F%8F%9B%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%234CAF50'/%3E%3Ctext x='256' y='360' text-anchor='middle' font-size='280' fill='white'%3E%F0%9F%8F%9B%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+})], {type: 'application/json'});
+    const manifestUrl = URL.createObjectURL(manifestBlob);
+    const manifestLink = document.createElement('link');
+    manifestLink.rel = 'manifest';
+    manifestLink.href = manifestUrl;
+    document.head.appendChild(manifestLink);
+  </script>
+</head>
+<body>
+
+<div id="android-guide" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#1a3a1a,#0a2a0a);border-bottom:2px solid #4CAF50;padding:14px 16px;font-family:'Noto Sans Arabic',sans-serif;direction:rtl;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+    <strong style="color:#4CAF50;font-size:15px;">📲 تثبيت التطبيق على أندرويد</strong>
+    <button onclick="document.getElementById('android-guide').style.display='none'" style="background:none;border:none;color:#888;font-size:20px;cursor:pointer;">✕</button>
+  </div>
+  <div style="color:#ccc;font-size:12px;line-height:2;">
+    1️⃣ افتح هذا الملف في <strong style="color:#4CAF50">متصفح Chrome</strong><br/>
+    2️⃣ اضغط على <strong style="color:#4CAF50">⋮ القائمة</strong> (ثلاث نقاط أعلى اليمين)<br/>
+    3️⃣ اختر <strong style="color:#4CAF50">"إضافة إلى الشاشة الرئيسية"</strong><br/>
+    4️⃣ اضغط <strong style="color:#4CAF50">إضافة</strong> ✅
+  </div>
+</div>
+<script>
+  // Show Android guide if on Android and not installed
+  if (/android/i.test(navigator.userAgent) && window.matchMedia && !window.matchMedia('(display-mode: standalone)').matches) {
+    setTimeout(() => { document.getElementById('android-guide').style.display = 'block'; }, 2000);
+  }
+</script>
+
+<div id="root"></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const GRADES = {
+  1:{name:"الأولى"},2:{name:"الثانية"},3:{name:"الثالثة"},4:{name:"الرابعة"},
+  5:{name:"الخامسة"},6:{name:"السادسة"},7:{name:"السابعة"},8:{name:"الثامنة"},
+  9:{name:"التاسعة"},10:{name:"العاشرة"},
+};
+const SALARY_SCALE = {
+  1:[910,930,950,970,990,1010,1030,1050,1070,1090,1110],
+  2:[723,740,757,774,791,808,825,842,859,876,893],
+  3:[600,610,620,630,640,650,660,670,680,690,700],
+  4:[490,500,510,520,530,540,550,560,570,580,590],
+  5:[429,435,441,447,453,459,465,471,477,483,489],
+  6:[362,368,374,380,386,392,398,404,410,416,422],
+  7:[296,302,308,314,320,326,332,338,344,350,356],
+  8:[260,263,266,269,272,275,278,281,284,287,290],
+  9:[210,213,216,219,222,225,228,231,234,237,240],
+  10:[170,173,176,179,182,185,188,191,194,197,200],
+};
+const ANNUAL_RAISE = {1:20,2:17.5,3:10,4:8,5:6,6:6,7:6,8:4,9:4,10:4};
+const CERT_ALLOWANCES = {doctorate:100,masters:75,high_diploma:55,bachelor:45,diploma:35,preparatory:25};
+const DANGER_RATES = {high:30,medium:26};
+const STAGE_DAYS = {1:1825,2:1825,3:1825,4:1825,5:1825,6:1460,7:1460,8:1460,9:1460,10:1460};
+const getStageDays = (grade) => STAGE_DAYS[grade] || 1460;
+const DEFAULT_TYPES = [
+  {id:"pm",      label:"شكر وتقدير رئيس الوزراء", daysReduction:180, color:"#FFD700", icon:"🏅"},
+  {id:"minister",label:"شكر وتقدير وزير",          daysReduction:90,  color:"#C0C0C0", icon:"🥇"},
+  {id:"company", label:"شكر وتقدير شركة أو جهة أخرى",          daysReduction:30,  color:"#CD7F32", icon:"🥈"},
+];
+const STORAGE_KEY = "noc_payroll_data";
+function loadSaved() {
+  try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : null; }
+  catch { return null; }
+}
+
+function App() {
+  const saved = loadSaved();
+  const [tab, setTab] = useState("service");
+  const [savedIndicator, setSavedIndicator] = useState(false);
+  const [form, setForm] = useState(saved?.form || {
+    name:"",employeeId:"",birthDate:"",hireDate:"",
+    currentDate:new Date().toISOString().split("T")[0],
+    grade:"7",stage:"1",certificate:"bachelor",dangerLevel:"medium",
+    position:"normal",maritalStatus:"single",children:"0",workLocation:"60",
+    lastPromotionDate:"",
+    educationLevel:"3",productionRole:"3",quarterlyEval:"3",leadershipLevel:"0",serviceYears:"3",
+  });
+  const [commTypes, setCommTypes] = useState(saved?.commTypes || DEFAULT_TYPES.map(t=>({...t})));
+  const [commendations, setCommendations] = useState(saved?.commendations || []);
+  const [result, setResult] = useState(null);
+
+  const update = (k,v) => setForm(f=>({...f,[k]:v}));
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ form, commTypes, commendations }));
+      setSavedIndicator(true);
+      const t = setTimeout(() => setSavedIndicator(false), 1500);
+      return () => clearTimeout(t);
+    } catch {}
+  }, [form, commTypes, commendations]);
+
+  const clearData = () => {
+    if (!window.confirm("هل تريد مسح جميع البيانات المحفوظة؟")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    setForm({ name:"",employeeId:"",birthDate:"",hireDate:"", currentDate:new Date().toISOString().split("T")[0],
+      grade:"7",stage:"1",certificate:"bachelor",dangerLevel:"medium",
+      position:"normal",maritalStatus:"single",children:"0",workLocation:"60",lastPromotionDate:"",
+      educationLevel:"3",productionRole:"3",quarterlyEval:"3",leadershipLevel:"0",serviceYears:"3", });
+    setCommTypes(DEFAULT_TYPES.map(t=>({...t})));
+    setCommendations([]);
+  };
+
+  const updateType = (id,k,v) =>
+    setCommTypes(ts=>ts.map(t=> t.id===id ? {...t,[k]: k==="daysReduction"? (parseInt(v)||0) : v} : t));
+  const resetTypes = () => setCommTypes(DEFAULT_TYPES.map(t=>({...t})));
+  const addCommendation = () =>
+    setCommendations(c=>[...c,{id:Date.now(),type:commTypes[0].id,customDays:null,date:"",note:""}]);
+  const removeCommendation = id => setCommendations(c=>c.filter(x=>x.id!==id));
+  const updateCommendation = (id,k,v) =>
+    setCommendations(c=>c.map(x=> x.id===id ? {...x,[k]:v} : x));
+  const getEffectiveDays = (c) => {
+    if (c.customDays !== null && c.customDays !== "") return parseInt(c.customDays)||0;
+    const t = commTypes.find(x=>x.id===c.type);
+    return t ? t.daysReduction : 0;
+  };
+  const calcReduction = () => commendations.reduce((s,c)=>s+getEffectiveDays(c),0);
+
+  const calculate = () => {
+    const {hireDate,currentDate,grade,stage,certificate,dangerLevel,position,maritalStatus,children,workLocation,lastPromotionDate}=form;
+    if(!hireDate) return;
+    const totalDays  = Math.floor((new Date(currentDate)-new Date(hireDate))/86400000);
+    const duration   = fmtDur(totalDays);
+    const totalYears = totalDays/365;
+    const stageNum   = parseInt(stage), gradeNum=parseInt(grade);
+    const BASE = getStageDays(gradeNum);
+    const reductionDays = calcReduction();
+    const hDate = new Date(hireDate);
+    const today = new Date(currentDate);
+    const stageStart = lastPromotionDate
+      ? new Date(lastPromotionDate)
+      : (() => { const d = new Date(hDate); d.setFullYear(hDate.getFullYear()+(stageNum-1)*2); return d; })();
+    const daysFromStageStart = Math.max(0, Math.ceil((today - stageStart) / 86400000));
+    const daysRemainingOrig  = Math.max(0, BASE - daysFromStageStart);
+    const daysRemainingEff   = Math.max(0, daysRemainingOrig - reductionDays);
+    const overdueOrig = daysRemainingOrig===0 ? Math.max(0, Math.ceil((today - stageStart) / 86400000) - BASE) : 0;
+    const overdueEff  = daysRemainingEff===0  ? Math.max(0, Math.ceil((today - stageStart) / 86400000) - (BASE - reductionDays)) : 0;
+    const nextStageDateOriginal  = new Date(today); nextStageDateOriginal.setDate(today.getDate()+daysRemainingOrig);
+    const nextStageDateEffective = new Date(today); nextStageDateEffective.setDate(today.getDate()+daysRemainingEff);
+    const daysToNext     = daysRemainingEff;
+    const daysToNextOrig = daysRemainingOrig;
+    const nextStageDuration = fmtDur(Math.max(0,daysToNext));
+    const nextStageNum = Math.min(stageNum+1,11);
+    const annualRaise  = ANNUAL_RAISE[gradeNum]*1000;
+    const baseSalary   = (SALARY_SCALE[gradeNum]?.[stageNum-1]||0)*1000;
+    const certAllowance   = Math.round(baseSalary*(CERT_ALLOWANCES[certificate]||0)/100);
+    const specialAllowance = Math.round(baseSalary*0.30);
+    const dangerAllowance = Math.round(baseSalary*DANGER_RATES[dangerLevel]/100);
+    let positionAllowance=0;
+    if(position==="deputy_dg")      positionAllowance=Math.round(baseSalary*0.30);
+    else if(position==="board_director") positionAllowance=Math.round(baseSalary*0.25);
+    else if(position==="dept_director")  positionAllowance=Math.round(baseSalary*0.20);
+    else if(position==="section_chief")  positionAllowance=Math.round(baseSalary*0.15);
+    const maritalAllowance  = maritalStatus==="married"?50000:0;
+    const childrenAllowance = Math.min(parseInt(children),4)*10000;
+    const locationAllowance = parseInt(workLocation)*1000;
+    const totalAllowances   = certAllowance+specialAllowance+dangerAllowance+positionAllowance+maritalAllowance+childrenAllowance+locationAllowance;
+    const retirementDed=Math.round(baseSalary*0.10),supportFundDed=1000,orphansDed=1000;
+    const stampDed=Math.round(2000000/12),socialDed=Math.round(baseSalary*0.00205);
+    const netBT=baseSalary+locationAllowance-retirementDed;
+    let taxAmount=0;
+    if(netBT>83333){
+      if(netBT<=166666) taxAmount=Math.round((netBT-83333)*0.03+83333*0.03);
+      else if(netBT<=333333) taxAmount=Math.round((netBT-166666)*0.05+166666*0.03);
+      else taxAmount=Math.round((netBT-333333)*0.10+333333*0.08);
+    }
+    const totalDeductions=retirementDed+supportFundDed+orphansDed+stampDed+socialDed+taxAmount;
+    const netSalary=baseSalary+totalAllowances-totalDeductions;
+    const commByType={};
+    commTypes.forEach(t=>{commByType[t.id]=commendations.filter(c=>c.type===t.id).length;});
+    const effectiveDays = daysRemainingEff;
+    const incEdu  = parseFloat(form.educationLevel||0);
+    const incProd = parseFloat(form.productionRole||0);
+    const incEval = parseFloat(form.quarterlyEval||0);
+    const incLead = parseFloat(form.leadershipLevel||0);
+    const incServ = Math.min(Math.floor(parseInt(form.serviceYears||0)/5), 2);
+    const incTotal= Math.min(incEdu+incProd+incEval+incLead+incServ,20);
+    const incentiveAmount = Math.round(baseSalary * incTotal / 100);
+    setResult({
+      duration,totalDays,totalYears,
+      nextStageDateOriginal,nextStageDateEffective,nextStageDuration,
+      nextStageNum,daysToNext,daysToNextOrig,reductionDays,effectiveDays,commByType,overdueOrig,overdueEff,
+      baseSalary,annualRaise,
+      allowances:{cert:certAllowance,special:specialAllowance,danger:dangerAllowance,position:positionAllowance,
+        marital:maritalAllowance,children:childrenAllowance,location:locationAllowance},
+      totalAllowances,
+      deductions:{retirement:retirementDed,support:supportFundDed,orphans:orphansDed,
+        stamp:stampDed,social:socialDed,tax:taxAmount},
+      totalDeductions,netSalary,
+      incentive:{edu:incEdu,prod:incProd,eval:incEval,lead:incLead,serv:incServ,total:incTotal,amount:incentiveAmount},
+    });
+  };
+
+  useEffect(()=>{calculate();},[form,commendations,commTypes]);
+
+  const fmt    = n=>(n??0).toLocaleString("en-US");
+
+  const fmtDur = days=>{const d=Math.max(0,days);return{years:Math.floor(d/365),months:Math.floor((d%365)/30),days:d%30,total:d};};
+  const fmtDate= d=>d instanceof Date&&!isNaN(d)?d.toLocaleDateString("en-GB",{year:"numeric",month:"2-digit",day:"2-digit"}):"—";
+  const fmtDateStr= s=>s?fmtDate(new Date(s)):"—";
+
+  const TABS=[
+    {id:"service",   label:"الخدمة",              icon:"⏱"},
+    {id:"commend",   label:"الشكر والتقدير",       icon:"🎖"},
+    {id:"retire",    label:"تاريخ التقاعد",        icon:"🎓"},
+    {id:"salary",    label:"شهادة شكر وتقدير",     icon:"📜"},
+    {id:"ration",    label:"إيقاف البطاقة التموينية", icon:"🛒"},
+  ];
+
+  return (
+    <div style={S.root}>
+      <div style={S.statusBar}>
+        <span style={{fontSize:12,color:"#aaa"}}>شركة نفط الشمال</span>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          {savedIndicator && <span style={{fontSize:11,color:"#4CAF50"}}>💾 تم الحفظ</span>}
+          <button onClick={clearData} style={{background:"none",border:"1px solid #333",borderRadius:6,color:"#666",fontSize:10,padding:"2px 8px",cursor:"pointer"}}>مسح البيانات</button>
+          <span style={{fontSize:12,color:"#4CAF50"}}>● متصل</span>
+        </div>
+      </div>
+
+      <div style={S.header}>
+        <div style={S.headerGrad}/>
+        <div style={{...S.headerContent,flexDirection:"column",alignItems:"center",textAlign:"center"}}>
+          <div style={{fontSize:34}}>🏛</div>
+          <div>
+            <div style={{...S.appTitle,fontSize:18}}>حاسبة استحقاقات</div>
+            <div style={S.appSubtitle}>من اعداد المهندس — محمد محي الدين عمر الجباري</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={S.card}>
+        <div style={S.sectionTitle}><span>👤</span> بيانات الموظف</div>
+        <Row>
+          <F label="الاسم"><input style={S.input} value={form.name} onChange={e=>update("name",e.target.value)} placeholder="الاسم الثلاثي"/></F>
+          <F label="رقم الشركة"><input style={S.input} value={form.employeeId} onChange={e=>update("employeeId",e.target.value)} placeholder="الرقم التعريفي"/></F>
+        </Row>
+        <Row>
+          <F label="تاريخ الولادة"><input style={{...S.input,textAlign:"center"}} type="date" value={form.birthDate} onChange={e=>update("birthDate",e.target.value)}/></F>
+          <F label="تاريخ التعيين"><input style={{...S.input,textAlign:"center"}} type="date" value={form.hireDate} onChange={e=>update("hireDate",e.target.value)}/></F>
+        </Row>
+        <Row>
+          <F label="التاريخ الحالي"><input style={{...S.input,textAlign:"center"}} type="date" value={form.currentDate} onChange={e=>update("currentDate",e.target.value)}/></F>
+          <F label="تاريخ آخر ترفيع"><input style={{...S.input,textAlign:"center"}} type="date" value={form.lastPromotionDate} onChange={e=>update("lastPromotionDate",e.target.value)}/></F>
+        </Row>
+        <Row>
+          <F label="الدرجة الوظيفية">
+            <select style={S.input} value={form.grade} onChange={e=>update("grade",e.target.value)}>
+              {Object.entries(GRADES).map(([k,v])=><option key={k} value={k}>الدرجة {v.name}</option>)}
+            </select>
+          </F>
+          <F label="المرحلة (الراتبة)">
+            <select style={S.input} value={form.stage} onChange={e=>update("stage",e.target.value)}>
+              {Array.from({length:11},(_,i)=>i+1).map(s=><option key={s} value={s}>المرحلة {s}</option>)}
+            </select>
+          </F>
+        </Row>
+        <Row>
+          <F label="الشهادة">
+            <select style={S.input} value={form.certificate} onChange={e=>update("certificate",e.target.value)}>
+              <option value="doctorate">دكتوراه (100%)</option>
+              <option value="masters">ماجستير (75%)</option>
+              <option value="high_diploma">دبلوم عالي (55%)</option>
+              <option value="bachelor">بكالوريوس (45%)</option>
+              <option value="diploma">دبلوم (35%)</option>
+              <option value="preparatory">إعدادية (25%)</option>
+            </select>
+          </F>
+          <F label="درجة الخطورة">
+            <select style={S.input} value={form.dangerLevel} onChange={e=>update("dangerLevel",e.target.value)}>
+              <option value="high">عالية (30%)</option>
+              <option value="medium">متوسطة (26%)</option>
+            </select>
+          </F>
+        </Row>
+        <Row>
+          <F label="المنصب الإداري">
+            <select style={S.input} value={form.position} onChange={e=>update("position",e.target.value)}>
+              <option value="normal">موظف عادي</option>
+              <option value="section_chief">رئيس شعبة (15%)</option>
+              <option value="dept_director">مدير قسم (20%)</option>
+              <option value="board_director">مدير هيأة (25%)</option>
+              <option value="deputy_dg">معاون مدير عام (30%)</option>
+            </select>
+          </F>
+          <F label="موقع العمل">
+            <select style={S.input} value={form.workLocation} onChange={e=>update("workLocation",e.target.value)}>
+              <option value="60">60,000 د.ع</option>
+              <option value="40">40,000 د.ع</option>
+            </select>
+          </F>
+        </Row>
+        <Row>
+          <F label="الحالة الزوجية">
+            <select style={S.input} value={form.maritalStatus} onChange={e=>update("maritalStatus",e.target.value)}>
+              <option value="single">أعزب / مطلق / أرمل</option>
+              <option value="married">متزوج</option>
+            </select>
+          </F>
+          <F label="عدد الأطفال (حتى 4)">
+            <select style={S.input} value={form.children} onChange={e=>update("children",e.target.value)}>
+              {[0,1,2,3,4].map(n=><option key={n} value={n}>{n} أطفال</option>)}
+            </select>
+          </F>
+        </Row>
+      </div>
+
+      <div style={S.tabBar}>
+        {TABS.map(t=>(
+          <button key={t.id} style={{...S.tabBtn,...(tab===t.id?S.tabActive:{})}} onClick={()=>setTab(t.id)}>
+            <span style={{fontSize:15}}>{t.icon}</span>
+            <span style={{fontSize:9}}>{t.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div style={S.tabContent}>
+
+        {tab==="service"&&result&&(
+          <div>
+            <div style={S.bigCard}>
+              <div style={S.bigCardLabel}>مدة الخدمة الفعلية</div>
+              <div style={S.bigCardValue}>
+                {(result.duration.days)}<span style={S.unit}> يوم </span>
+                {(result.duration.months)}<span style={S.unit}> شهر </span>
+                {(result.duration.years)}<span style={S.unit}> سنة</span>
+              </div>
+              <div style={S.bigCardSub}>{fmt(result.totalDays)} يوم إجمالي</div>
+            </div>
+            <div style={S.infoRow}>
+              <div style={S.infoBox}><div style={S.infoLabel}>تاريخ التعيين</div><div style={S.infoValue}>{fmtDateStr(form.hireDate)}</div></div>
+              <div style={S.infoBox}><div style={S.infoLabel}>سنوات الخدمة</div><div style={S.infoValue}>{(result.totalYears.toFixed(1))}</div></div>
+            </div>
+            {form.birthDate&&(()=>{
+              const bd=new Date(form.birthDate);
+              const retDate=new Date(bd);retDate.setFullYear(bd.getFullYear()+60);
+              const today=new Date(form.currentDate);
+              const daysLeft=Math.ceil((retDate-today)/86400000);
+              const isRetired=daysLeft<=0;
+              const retDur=fmtDur(Math.max(0,daysLeft));
+              return null;
+            })()}
+            <div style={S.promotionCard}>
+              <div style={S.promoHeader}><span style={{fontSize:24}}>🏆</span>
+                <div><div style={S.promoTitle}>استحقاق العلاوة والترفيع</div>
+                  <div style={S.promoSub}>المرحلة القادمة: {(result.nextStageNum)}</div></div>
+              </div>
+              <div style={{display:"flex",gap:8,marginBottom:10}}>
+                <div style={{...S.promoDateBox,flex:1,opacity:0.55}}>
+                  <div style={S.promoDateLabel}>التاريخ الأصلي</div>
+                  <div style={{...S.promoDate,fontSize:12,color:"#aaa"}}>{fmtDate(result.nextStageDateOriginal)}</div>
+                </div>
+                <div style={{...S.promoDateBox,flex:1,border:"1px solid #FFD70066"}}>
+                  <div style={S.promoDateLabel}>بعد الشكر والتقدير 🎖</div>
+                  <div style={{...S.promoDate,color:"#FFD700"}}>{fmtDate(result.nextStageDateEffective)}</div>
+                </div>
+              </div>
+              {result.reductionDays>0&&(
+                <div style={S.reductionBadge}>
+                  <span style={{fontSize:16}}>⚡</span>
+                  <span>تقليص <strong style={{color:"#FFD700"}}>{(Math.round(result.reductionDays/30))}</strong> شهر بفضل الشكر والتقدير</span>
+                </div>
+              )}
+              {result.daysToNext>0?(
+                <div style={S.countdown}>
+                  <span style={S.cdNum}>{(result.nextStageDuration.days)}</span><span style={S.cdUnit}>يوم</span>
+                  <span style={S.cdNum}>{(result.nextStageDuration.months)}</span><span style={S.cdUnit}>شهر</span>
+                  <span style={S.cdNum}>{(result.nextStageDuration.years)}</span><span style={S.cdUnit}>سنة</span>
+                  <div style={{width:"100%",textAlign:"center",fontSize:11,color:"#aaa",marginTop:4}}>المتبقي للاستحقاق</div>
+                </div>
+              ):(
+                <div>
+                  <div style={S.eligible}>✅ مستحق للعلاوة والترفيع الآن</div>
+                  {result.overdueEff>0&&(
+                    <div style={{background:"#2a0000",border:"1px solid #F4433655",borderRadius:10,padding:"10px 14px",marginTop:8,textAlign:"center"}}>
+                      <div style={{fontSize:11,color:"#888",marginBottom:4}}>مدة التجاوز عن الاستحقاق</div>
+                      <div style={{fontSize:15,fontWeight:700,color:"#F44336"}}>
+                        {fmtDur(result.overdueEff).years>0&&<span>{(fmtDur(result.overdueEff).years)} سنة </span>}
+                        {fmtDur(result.overdueEff).months>0&&<span>{(fmtDur(result.overdueEff).months)} شهر </span>}
+                        <span>{(fmtDur(result.overdueEff).days)} يوم</span>
+                      </div>
+                      {result.overdueOrig!==result.overdueEff&&(
+                        <div style={{fontSize:11,color:"#888",marginTop:4}}>بدون شكر وتقدير: {fmtDur(result.overdueOrig).years>0?(fmtDur(result.overdueOrig).years)+" سنة ":""}{fmtDur(result.overdueOrig).months>0?(fmtDur(result.overdueOrig).months)+" شهر ":""}{(fmtDur(result.overdueOrig).days)} يوم</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+              <div style={S.raiseRow}>
+                <span style={S.raiseLabel}>قيمة العلاوة السنوية</span>
+                <span style={S.raiseVal}>{fmt(result.annualRaise)} د.ع</span>
+              </div>
+            </div>
+            <div style={S.card}>
+              <div style={S.sectionTitle}><span>📊</span> مسار الدرجة الوظيفية</div>
+              <div style={S.progressLabel}><span>الدرجة {GRADES[form.grade]?.name}</span><span>المرحلة {(form.stage)} / {(11)}</span></div>
+              <div style={S.progressTrack}><div style={{...S.progressFill,width:`${(parseInt(form.stage)/11)*100}%`}}/></div>
+              <div style={S.stageGrid}>
+                {Array.from({length:11},(_,i)=>(
+                  <div key={i} style={{...S.stageDot,...(i+1<=parseInt(form.stage)?S.stageDotActive:{}),...(i+1===parseInt(form.stage)?S.stageDotCurrent:{})}}>{(i+1)}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {tab==="commend"&&(
+          <div>
+            {result&&(
+              <div style={{...S.bigCard,background:"linear-gradient(135deg,#1a1200,#2d2000)"}}>
+                <div style={S.bigCardLabel}>إجمالي أثر الشكر والتقدير على الاستحقاق</div>
+                <div style={{...S.bigCardValue,color:"#FFD700"}}>{(Math.round(result.reductionDays/30))}<span style={{...S.unit,fontSize:18}}> شهر</span></div>
+                <div style={S.bigCardSub}>تقليص من مدة الانتظار للعلاوة والترفيع</div>
+                <div style={{display:"flex",justifyContent:"center",gap:16,marginTop:12}}>
+                  {commTypes.map(t=>(
+                    <div key={t.id} style={{textAlign:"center"}}>
+                      <div style={{fontSize:20}}>{t.icon}</div>
+                      <div style={{fontSize:18,fontWeight:900,color:t.color}}>{(result.commByType[t.id]||0)}</div>
+                      <div style={{fontSize:10,color:"#666"}}>{t.label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div style={{...S.card,marginTop:10,display:"none"}}>
+              <div style={{border:"1px solid #2a2a2a",borderRadius:12,overflow:"hidden"}}>
+                {commTypes.map((t,i)=>(
+                  <details key={t.id} style={{background:"#111",borderBottom:i<commTypes.length-1?"1px solid #222":"none"}}>
+                    <summary style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",cursor:"pointer",listStyle:"none",userSelect:"none"}}>
+                      <span style={{fontSize:20}}>{t.icon}</span>
+                      <span style={{flex:1,fontSize:13,fontWeight:700,color:t.color}}>{t.label}</span>
+                      <span style={{fontSize:11,color:"#666",background:"#1a1a1a",borderRadius:6,padding:"2px 8px",border:`1px solid ${t.color}44`}}>
+                        ↓ {(Math.round(t.daysReduction/30))} شهر
+                      </span>
+                      <span style={{fontSize:14,color:"#555",marginRight:4}}>▾</span>
+                    </summary>
+                    <div style={{padding:"12px 14px",borderTop:"1px solid #1a1a1a",background:"#0f0f0f"}}>
+                      <div style={{display:"flex",gap:8}}>
+                        <div style={{flex:2}}>
+                          <label style={S.label}>اسم نوع الشكر والتقدير</label>
+                          <input style={S.input} value={t.label} onChange={e=>updateType(t.id,"label",e.target.value)} placeholder="مثال: شكر وتقدير وزاري"/>
+                        </div>
+                        <div style={{flex:1}}>
+                          <label style={S.label}>التأثير (أيام) ↓</label>
+                          <input style={{...S.input,textAlign:"center",color:t.color,fontWeight:700}}
+                            type="number" min="0" max="1825" value={t.daysReduction}
+                            onChange={e=>updateType(t.id,"daysReduction",e.target.value)}/>
+                        </div>
+                      </div>
+                      <div style={{marginTop:8,fontSize:11,color:"#555",textAlign:"right"}}>
+                        كل شكر وتقدير من هذا النوع تُقلّص مدة الانتظار بـ <span style={{color:t.color,fontWeight:700}}>{(Math.round(t.daysReduction/30))}</span> شهر
+                      </div>
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </div>
+            <div style={{...S.card,marginTop:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                <div style={S.sectionTitle}><span>🎖</span> الشكر والتقدير الممنوحة</div>
+                <button onClick={addCommendation} style={S.addBtn}>+ إضافة</button>
+              </div>
+              {commendations.length===0&&(
+                <div style={{textAlign:"center",color:"#444",padding:"20px 0",fontSize:13}}>لا يوجد شكر وتقدير مضاف</div>
+              )}
+              {commendations.map((c,idx)=>{
+                const t = commTypes.find(x=>x.id===c.type);
+                const effectiveDaysVal = getEffectiveDays(c);
+                return (
+                  <div key={c.id} style={{...S.commRow,borderRight:`4px solid ${t?.color||"#444"}`}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                      <span style={{fontSize:20}}>{t?.icon}</span>
+                      <span style={{fontSize:12,color:t?.color,fontWeight:700}}>شكر وتقدير #{(idx+1)}</span>
+                      <button onClick={()=>removeCommendation(c.id)} style={S.delBtn}>✕</button>
+                    </div>
+                    <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                      <div style={{flex:1,minWidth:110}}>
+                        <label style={S.label}>نوع الشكر والتقدير</label>
+                        <select style={S.input} value={c.type} onChange={e=>updateCommendation(c.id,"type",e.target.value)}>
+                          {commTypes.map(x=>(<option key={x.id} value={x.id}>{x.icon} {x.label} (↓{(Math.round(x.daysReduction/30))} شهر)</option>))}
+                        </select>
+                      </div>
+                      <div style={{flex:1,minWidth:110}}>
+                        <label style={S.label}>تاريخ الشكر والتقدير</label>
+                        <input style={{...S.input,textAlign:"center"}} type="date" value={c.date} onChange={e=>updateCommendation(c.id,"date",e.target.value)}/>
+                      </div>
+                    </div>
+
+                    <div style={{marginTop:8,display:"flex",justifyContent:"space-between",background:"#0d0d0d",borderRadius:8,padding:"6px 10px"}}>
+                      <span style={{fontSize:11,color:"#666"}}>التأثير الفعلي لهذا الشكر والتقدير</span>
+                      <span style={{fontSize:13,fontWeight:900,color:t?.color}}>
+                        ↓ {(Math.round(effectiveDaysVal/30))} شهر
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {tab==="retire"&&(
+          <div>
+            {!form.birthDate?(
+              <div style={{textAlign:"center",padding:"60px 20px",color:"#444"}}>
+                <div style={{fontSize:48}}>🎓</div>
+                <div style={{fontSize:15,marginTop:12}}>أدخل تاريخ الولادة لحساب تاريخ التقاعد</div>
+              </div>
+            ):(()=>{
+              const bd=new Date(form.birthDate);
+              const retDate=new Date(bd);retDate.setFullYear(bd.getFullYear()+60);
+              const today=new Date(form.currentDate);
+              const daysLeft=Math.ceil((retDate-today)/86400000);
+              const isRetired=daysLeft<=0;
+              const retDur=fmtDur(Math.max(0,daysLeft));
+              const hireDays = form.hireDate ? Math.max(0,Math.floor((retDate-new Date(form.hireDate))/86400000)) : null;
+              const hireDur = hireDays!==null ? fmtDur(hireDays) : null;
+              return(
+                <div>
+                  <div style={{...S.bigCard,background:isRetired?"linear-gradient(135deg,#1a0000,#2d0000)":"linear-gradient(135deg,#0d1a2a,#1a3a4a)",border:`1px solid ${isRetired?"#F44336":"#1565C0"}`}}>
+                    <div style={{fontSize:40,marginBottom:8}}>🎓</div>
+                    <div style={{...S.bigCardLabel,color:isRetired?"#F44336":"#42A5F5"}}>تاريخ التقاعد</div>
+                    <div style={{...S.bigCardValue,color:isRetired?"#F44336":"#42A5F5",fontSize:22,marginTop:8}}>{fmtDate(retDate)}</div>
+                    <div style={{...S.bigCardSub,marginTop:8}}>عند بلوغ سن الستين</div>
+                  </div>
+                  <div style={S.infoRow}>
+                    <div style={S.infoBox}>
+                      <div style={S.infoLabel}>تاريخ الولادة</div>
+                      <div style={S.infoValue}>{fmtDate(bd)}</div>
+                    </div>
+                    <div style={S.infoBox}>
+                      <div style={S.infoLabel}>العمر الحالي</div>
+                      <div style={S.infoValue}>{(()=>{const ageDur=fmtDur(Math.max(0,Math.floor((today-bd)/86400000)));return `${ageDur.days} يوم ${ageDur.months} شهر ${ageDur.years} سنة`;})()}</div>
+                    </div>
+                  </div>
+                  {hireDur&&(
+                    <div style={{margin:"10px 12px 0",background:"linear-gradient(135deg,#0d2a0d,#1a3d1a)",borderRadius:14,padding:"16px",border:"1px solid #2d4a2d"}}>
+                      <div style={{fontSize:13,color:"#8bc34a",fontWeight:700,marginBottom:12,display:"flex",alignItems:"center",gap:6}}>
+                        <span>📅</span> مدة الخدمة من التعيين حتى التقاعد
+                      </div>
+                      <div style={{display:"flex",gap:8}}>
+                        <div style={{flex:1,background:"#111",borderRadius:10,padding:"10px 14px",border:"1px solid #222",textAlign:"center"}}>
+                          <div style={{fontSize:11,color:"#666",marginBottom:4}}>تاريخ التعيين</div>
+                          <div style={{fontSize:12,fontWeight:600,color:"#aaa"}}>{fmtDateStr(form.hireDate)}</div>
+                        </div>
+                        <div style={{flex:1,background:"#111",borderRadius:10,padding:"10px 14px",border:"1px solid #2d4a2d",textAlign:"center"}}>
+                          <div style={{fontSize:11,color:"#666",marginBottom:4}}>تاريخ التقاعد</div>
+                          <div style={{fontSize:12,fontWeight:600,color:"#4CAF50"}}>{fmtDate(retDate)}</div>
+                        </div>
+                      </div>
+                      <div style={{display:"flex",justifyContent:"center",gap:12,flexWrap:"wrap",marginTop:12}}>
+                        <div style={{textAlign:"center",background:"#111",borderRadius:10,padding:"12px 16px",minWidth:70,border:"1px solid #2d4a2d"}}>
+                          <div style={{fontSize:28,fontWeight:900,color:"#4CAF50"}}>{(hireDur.days)}</div>
+                          <div style={{fontSize:12,color:"#888",marginTop:2}}>يوم</div>
+                        </div>
+                        <div style={{textAlign:"center",background:"#111",borderRadius:10,padding:"12px 16px",minWidth:70,border:"1px solid #2d4a2d"}}>
+                          <div style={{fontSize:28,fontWeight:900,color:"#4CAF50"}}>{(hireDur.months)}</div>
+                          <div style={{fontSize:12,color:"#888",marginTop:2}}>شهر</div>
+                        </div>
+                        <div style={{textAlign:"center",background:"#111",borderRadius:10,padding:"12px 16px",minWidth:70,border:"1px solid #2d4a2d"}}>
+                          <div style={{fontSize:28,fontWeight:900,color:"#4CAF50"}}>{(hireDur.years)}</div>
+                          <div style={{fontSize:12,color:"#888",marginTop:2}}>سنة</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {isRetired?(
+                    <div style={{margin:"10px 12px 0",textAlign:"center",background:"#2a0000",borderRadius:14,padding:"20px",color:"#F44336",fontWeight:700,fontSize:16,border:"1px solid #F4433655"}}>
+                      🔴 الموظف بلغ سن التقاعد
+                    </div>
+                  ):(
+                    <div style={{margin:"10px 12px 0",background:"#0f1a2a",borderRadius:14,padding:"16px",border:"1px solid #1565C033"}}>
+                      <div style={{fontSize:13,color:"#888",textAlign:"center",marginBottom:12}}>المتبقي للتقاعد</div>
+                      <div style={{display:"flex",justifyContent:"center",gap:12,flexWrap:"wrap"}}>
+                        <div style={{textAlign:"center",background:"#111",borderRadius:10,padding:"12px 16px",minWidth:70,border:"1px solid #1565C044"}}>
+                          <div style={{fontSize:28,fontWeight:900,color:"#42A5F5"}}>{(retDur.days)}</div>
+                          <div style={{fontSize:12,color:"#888",marginTop:2}}>يوم</div>
+                        </div>
+                        {retDur.months>0&&(
+                          <div style={{textAlign:"center",background:"#111",borderRadius:10,padding:"12px 16px",minWidth:70,border:"1px solid #1565C044"}}>
+                            <div style={{fontSize:28,fontWeight:900,color:"#42A5F5"}}>{(retDur.months)}</div>
+                            <div style={{fontSize:12,color:"#888",marginTop:2}}>شهر</div>
+                          </div>
+                        )}
+                        {retDur.years>0&&(
+                          <div style={{textAlign:"center",background:"#111",borderRadius:10,padding:"12px 16px",minWidth:70,border:"1px solid #1565C044"}}>
+                            <div style={{fontSize:28,fontWeight:900,color:"#42A5F5"}}>{(retDur.years)}</div>
+                            <div style={{fontSize:12,color:"#888",marginTop:2}}>سنة</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        )}        {tab==="salary"&&result&&(
+          <div style={{padding:"12px 12px 0"}}>
+
+            {form.name&&(
+              <div style={S.shukrCard}>
+                <div style={S.shukrTitle}>🎖 شهادة شكر وتقدير</div>
+                <div style={{lineHeight:2,color:"#ccc",fontSize:14,textAlign:"center"}}>
+                  الموظف المخلص<br/>
+                  <strong style={{fontSize:18,color:"#FFD700"}}>{form.name}</strong><br/>
+                  <span style={{fontSize:13,color:"#aaa"}}>رقم الشركة: {form.employeeId||"—"}</span>
+                  <br/><br/>
+                  على خدمته الوطنية الصادقة البالغة<br/>
+                  <strong style={{fontSize:16,color:"#4CAF50"}}>{(result.duration.years)} سنة و {(result.duration.months)} شهر</strong><br/>
+                  في الدرجة الوظيفية {GRADES[form.grade]?.name} / المرحلة {(form.stage)}
+                  {commendations.length>0&&(<>
+                    <br/><br/>
+                    وبتقدير صادق على <strong style={{color:"#FFD700"}}>{(commendations.length)} شكر وتقدير</strong> أسهمت في تقليص مدة الاستحقاق بـ <strong style={{color:"#FFD700"}}>{(Math.round(result.reductionDays/30))} شهر</strong>
+                  </>)}
+                  <br/><br/>
+                  <span style={{fontSize:12,color:"#888"}}>وتأمل له مزيداً من التقدم والازدهار في مسيرته المهنية</span>
+                  <div style={{fontSize:48,opacity:0.08,marginTop:8}}>🏛</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        )}
+
+        {tab==="ration"&&(
+          <div>
+            {result&&(()=>{
+              const base       = result.baseSalary;
+              const dangerPct  = DANGER_RATES[form.dangerLevel] || 0;
+              const certPct    = CERT_ALLOWANCES[form.certificate] || 0;
+              const specialPct = 30;
+              const combinedAmt = Math.round(base * (dangerPct + certPct + specialPct) / 100);
+              const maritalAmt  = result.allowances.marital;
+              const childrenAmt = result.allowances.children;
+              const locationAmt = result.allowances.location;
+              const total       = base + combinedAmt + maritalAmt + childrenAmt + locationAmt;
+              const threshold   = 1500000;
+              const exceeded    = total >= threshold;
+              return(
+                <div style={{margin:"10px 12px 0",background: exceeded?"linear-gradient(135deg,#1a0000,#2d0000)":"linear-gradient(135deg,#0d1a0d,#1a2d1a)",borderRadius:14,padding:"16px",border:`1px solid ${exceeded?"#F4433655":"#4CAF5055"}`}}>
+                  <div style={{fontSize:13,color: exceeded?"#F44336":"#4CAF50",fontWeight:700,marginBottom:12,display:"flex",alignItems:"center",gap:6}}>
+                    <span>🛒</span> إيقاف البطاقة التموينية
+                  </div>
+                  {[
+                    {label:"الراتب الاسمي",            val:base,        color:"#e8e8e8"},
+                    {label:"مخصصات الزوجية",           val:maritalAmt,  color:"#42A5F5"},
+                    {label:"مخصصات الأطفال",           val:childrenAmt, color:"#AB47BC"},
+                    {label:"مخصصات موقع العمل",        val:locationAmt, color:"#26C6DA"},
+                  ].map((row,i)=>(
+                    <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 10px",background:"#111",borderRadius:8,marginBottom:6,border:"1px solid #2a2a2a"}}>
+                      <span style={{fontSize:11,color:row.color,flex:1,lineHeight:1.5}}>{row.label}</span>
+                      <span style={{fontSize:13,fontWeight:700,color:row.color,fontFamily:"monospace",whiteSpace:"nowrap",marginRight:8}}>{fmt(row.val)} <span style={{fontSize:10,color:"#666"}}>د.ع</span></span>
+                    </div>
+                  ))}
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 12px",background: exceeded?"#2a0000":"#0d2a0d",borderRadius:10,marginTop:8,border:`1px solid ${exceeded?"#F44336":"#4CAF50"}`}}>
+                    <span style={{fontSize:14,fontWeight:700,color: exceeded?"#F44336":"#4CAF50"}}>المجموع</span>
+                    <span style={{fontSize:16,fontWeight:900,color: exceeded?"#F44336":"#4CAF50",fontFamily:"monospace"}}>{fmt(total)} <span style={{fontSize:11}}>د.ع</span></span>
+                  </div>
+                  <div style={{marginTop:10,textAlign:"center",padding:"8px",borderRadius:8,background: exceeded?"#3a0000":"#0a2a0a",border:`1px solid ${exceeded?"#F4433655":"#4CAF5055"}`}}>
+                    <span style={{fontSize:13,fontWeight:700,color: exceeded?"#F44336":"#4CAF50"}}>
+                      {exceeded ? "🔴 يستوجب إيقاف البطاقة التموينية" : "🟢 لا يستوجب إيقاف البطاقة التموينية"}
+                    </span>
+                    <div style={{fontSize:11,color:"#666",marginTop:4}}>الحد المقرر: {fmt(threshold)} د.ع</div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {!result&&!form.hireDate&&(
+          <div style={{textAlign:"center",padding:"60px 20px",color:"#444"}}>
+            <div style={{fontSize:48}}>📅</div>
+            <div style={{fontSize:15,marginTop:12}}>أدخل تاريخ التعيين للبدء</div>
+          </div>
+        )}
+      </div>
+
+      <div style={{textAlign:"center",padding:"20px 16px",fontSize:10,color:"#333",lineHeight:1.8}}>
+        © من اعداد المهندس /  محمد محي الدين عمر الجباري<br/>
+        الهاتف النقال 07701264441
+      </div>
+    </div>
+  );
+}
+
+const Row = ({children})=><div style={{display:"flex",gap:10,marginBottom:10}}>{children}</div>;
+const F   = ({label,children})=><div style={{flex:1}}><label style={S.label}>{label}</label>{children}</div>;
+
+const S={
+  root:{fontFamily:"'Noto Sans Arabic','Segoe UI',sans-serif",direction:"rtl",background:"#0d0d0d",minHeight:"100vh",color:"#e8e8e8",maxWidth:480,margin:"0 auto",paddingBottom:80},
+  statusBar:{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 16px",background:"#111",fontSize:12},
+  header:{position:"relative",overflow:"hidden",background:"linear-gradient(135deg,#0a2a0a,#1a3a1a,#0f2f0f)",padding:"20px 16px 24px"},
+  headerGrad:{position:"absolute",top:0,left:0,right:0,bottom:0,background:"radial-gradient(circle at 30% 50%,rgba(76,175,80,0.15) 0%,transparent 70%)"},
+  headerContent:{position:"relative",display:"flex",alignItems:"center",gap:14},
+  appTitle:{fontSize:20,fontWeight:800,color:"#fff",letterSpacing:0.5},
+  appSubtitle:{fontSize:12,color:"#8bc34a",marginTop:2},
+  card:{margin:"12px 12px 0",background:"#1a1a1a",borderRadius:16,padding:"14px 16px",border:"1px solid #2a2a2a"},
+  sectionTitle:{fontSize:14,fontWeight:700,color:"#8bc34a",marginBottom:12,display:"flex",alignItems:"center",gap:6},
+  label:{fontSize:11,color:"#888",display:"block",marginBottom:4},
+  input:{width:"100%",background:"#111",border:"1px solid #333",borderRadius:10,padding:"10px 12px",color:"#e8e8e8",fontSize:13,boxSizing:"border-box",outline:"none"},
+  tabBar:{position:"sticky",top:0,zIndex:100,display:"flex",background:"#111",borderBottom:"1px solid #222",marginTop:12},
+  tabBtn:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2,padding:"8px 2px",background:"none",border:"none",color:"#666",cursor:"pointer"},
+  tabActive:{color:"#4CAF50",borderBottom:"2px solid #4CAF50"},
+  tabContent:{padding:"0 0 12px"},
+  bigCard:{margin:"12px 12px 0",background:"linear-gradient(135deg,#0d2a0d,#1a3d1a)",borderRadius:20,padding:"24px 20px",textAlign:"center",border:"1px solid #2d4a2d"},
+  bigCardLabel:{fontSize:13,color:"#8bc34a",marginBottom:8},
+  bigCardValue:{fontSize:36,fontWeight:900,color:"#fff",lineHeight:1},
+  bigCardSub:{fontSize:12,color:"#666",marginTop:8},
+  unit:{fontSize:14,color:"#8bc34a"},
+  infoRow:{display:"flex",gap:10,margin:"10px 12px 0"},
+  infoBox:{flex:1,background:"#1a1a1a",borderRadius:12,padding:"12px",textAlign:"center",border:"1px solid #2a2a2a"},
+  infoLabel:{fontSize:11,color:"#666",marginBottom:4},
+  infoValue:{fontSize:16,fontWeight:700,color:"#fff"},
+  promotionCard:{margin:"10px 12px 0",background:"linear-gradient(135deg,#1a1200,#2a2000)",borderRadius:16,padding:"16px",border:"1px solid #3a3000"},
+  promoHeader:{display:"flex",alignItems:"center",gap:12,marginBottom:14},
+  promoTitle:{fontSize:15,fontWeight:700,color:"#FFD700"},
+  promoSub:{fontSize:12,color:"#888",marginTop:2},
+  promoDateBox:{background:"#111",borderRadius:10,padding:"10px 14px",border:"1px solid #222"},
+  promoDateLabel:{fontSize:11,color:"#666",marginBottom:4},
+  promoDate:{fontSize:14,fontWeight:600,color:"#FFD700"},
+  reductionBadge:{display:"flex",alignItems:"center",gap:8,background:"#2a2000",borderRadius:10,padding:"8px 12px",marginBottom:10,color:"#ccc",fontSize:13,border:"1px solid #FFD70033"},
+  countdown:{display:"flex",flexWrap:"wrap",justifyContent:"center",gap:4,background:"#111",borderRadius:10,padding:"10px",marginBottom:10,alignItems:"center"},
+  cdNum:{fontSize:24,fontWeight:900,color:"#FF9800"},
+  cdUnit:{fontSize:12,color:"#888",marginLeft:2,marginRight:8},
+  eligible:{textAlign:"center",background:"#0d2a0d",borderRadius:10,padding:12,color:"#4CAF50",fontWeight:700,marginBottom:10},
+  raiseRow:{display:"flex",justifyContent:"space-between",alignItems:"center",background:"#111",borderRadius:10,padding:"10px 14px"},
+  raiseLabel:{fontSize:13,color:"#888"},
+  raiseVal:{fontSize:15,fontWeight:700,color:"#4CAF50"},
+  progressLabel:{display:"flex",justifyContent:"space-between",fontSize:12,color:"#888",marginBottom:8},
+  progressTrack:{height:8,background:"#222",borderRadius:4,overflow:"hidden",marginBottom:10},
+  progressFill:{height:"100%",background:"linear-gradient(90deg,#4CAF50,#8bc34a)",borderRadius:4},
+  stageGrid:{display:"flex",gap:4,flexWrap:"wrap"},
+  stageDot:{width:32,height:32,borderRadius:8,background:"#222",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"#555",fontWeight:600},
+  stageDotActive:{background:"#1a3a1a",color:"#4CAF50"},
+  stageDotCurrent:{background:"#4CAF50",color:"#fff",boxShadow:"0 0 8px #4CAF50"},
+  typeRow:{background:"#111",borderRadius:12,padding:"12px",marginBottom:10,border:"1px solid #2a2a2a"},
+  commRow:{background:"#111",borderRadius:12,padding:"12px",marginBottom:10,border:"1px solid #2a2a2a"},
+  addBtn:{background:"#1a3a1a",border:"1px solid #4CAF50",color:"#4CAF50",borderRadius:10,padding:"6px 14px",fontSize:13,cursor:"pointer",fontWeight:700},
+  delBtn:{marginRight:"auto",background:"#2a0000",border:"none",color:"#F44336",borderRadius:6,padding:"2px 8px",cursor:"pointer",fontSize:13},
+  salaryBreakdown:{margin:"10px 12px 0"},
+  breakdownRow:{display:"flex",justifyContent:"space-between",alignItems:"center",background:"#1a1a1a",borderRadius:12,padding:"14px 16px",marginBottom:8,border:"1px solid #2a2a2a"},
+  breakdownLabel:{fontSize:14,color:"#ccc"},
+  breakdownVal:{fontSize:15,fontWeight:700},
+  shukrCard:{margin:"12px 12px 0",background:"linear-gradient(135deg,#0d0d0d,#1a1a00)",border:"2px solid #FFD700",borderRadius:20,padding:"20px 16px",textAlign:"center"},
+  shukrTitle:{fontSize:16,fontWeight:800,color:"#FFD700",marginBottom:16,letterSpacing:1},
+  allowanceRow:{display:"flex",justifyContent:"space-between",alignItems:"center",background:"#1a1a1a",borderRadius:12,padding:"14px 16px",margin:"8px 12px 0",border:"1px solid #2a2a2a"},
+  deductionRow:{display:"flex",alignItems:"center",gap:10,background:"#1a1a1a",borderRadius:12,padding:"12px 16px",margin:"8px 12px 0",border:"1px solid #2a2a2a"},
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+
+<script>
+// PWA Install Prompt
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  setTimeout(showInstallBanner, 4000);
+});
+function showInstallBanner() {
+  if (!deferredPrompt || document.querySelector('.install-bar')) return;
+  const bar = document.createElement('div');
+  bar.className = 'install-bar';
+  bar.innerHTML = `
+    <div class="msg"><strong>📲 تثبيت التطبيق</strong>ثبّت على هاتفك للاستخدام بدون إنترنت</div>
+    <button class="ibtn" onclick="installPWA()">تثبيت</button>
+    <button class="xbtn" onclick="this.closest('.install-bar').remove()">✕</button>
+  `;
+  document.body.appendChild(bar);
+}
+async function installPWA() {
+  document.querySelector('.install-bar')?.remove();
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+}
+
+// Service Worker
+const SW_CODE = `
+const CACHE='noc-v1';
+const FILES=['/'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)));self.skipWaiting();});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
+self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('/'))));});
+`;
+
+if ('serviceWorker' in navigator) {
+  const blob = new Blob([SW_CODE], {type:'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+</script>
+</body>
+</html>
