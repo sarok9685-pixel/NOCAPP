@@ -32,20 +32,6 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #0d0d0d; }
     #root { min-height: 100vh; }
-    .install-bar {
-      position: fixed; bottom: 80px; left: 12px; right: 12px;
-      background: linear-gradient(135deg,#1a3a1a,#0a2a0a);
-      border: 1px solid #4CAF50; border-radius: 16px;
-      padding: 14px 16px; z-index: 9999;
-      display: flex; align-items: center; gap: 12px;
-      box-shadow: 0 8px 32px rgba(76,175,80,0.25);
-      animation: slideUp .3s ease;
-    }
-    @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
-    .install-bar .msg { flex: 1; color: #e8e8e8; font-size: 13px; direction: rtl; font-family: 'Noto Sans Arabic', sans-serif; }
-    .install-bar .msg strong { color: #4CAF50; display: block; margin-bottom: 2px; font-size: 14px; }
-    .install-bar .ibtn { background: #4CAF50; color: #fff; border: none; border-radius: 10px; padding: 8px 16px; font-size: 13px; cursor: pointer; font-weight: 700; white-space: nowrap; }
-    .install-bar .xbtn { background: none; border: none; color: #666; font-size: 20px; cursor: pointer; line-height: 1; }
   </style>
 </head>
 <body>
@@ -831,32 +817,6 @@ root.render(<App />);
 </script>
 
 <script>
-// PWA Install Prompt
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  setTimeout(showInstallBanner, 4000);
-});
-function showInstallBanner() {
-  if (!deferredPrompt || document.querySelector('.install-bar')) return;
-  const bar = document.createElement('div');
-  bar.className = 'install-bar';
-  bar.innerHTML = `
-    <div class="msg"><strong>📲 تثبيت التطبيق</strong>ثبّت على هاتفك للاستخدام بدون إنترنت</div>
-    <button class="ibtn" onclick="installPWA()">تثبيت</button>
-    <button class="xbtn" onclick="this.closest('.install-bar').remove()">✕</button>
-  `;
-  document.body.appendChild(bar);
-}
-async function installPWA() {
-  document.querySelector('.install-bar')?.remove();
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-}
-
 // Service Worker
 const SW_CODE = `
 const CACHE='noc-v1';
