@@ -8,8 +8,25 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="شركة نفط الشمال" />
-  <title>حاسبة الاستحقاق والتقاعد - شركة نفط الشمال</title>
+  <meta name="apple-mobile-web-app-title" content="NOC" />
+  <title>حاسبة استحقاقات - شركة نفط الشمال</title>
+  <script>
+    const __manifest = {
+      name: "حاسبة استحقاقات",
+      short_name: "NOC",
+      start_url: ".",
+      display: "standalone",
+      background_color: "#0d0d0d",
+      theme_color: "#0d0d0d",
+      orientation: "portrait",
+      icons: [{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230d0d0d'/><text y='.9em' font-size='80'>🏛</text></svg>",sizes:"any",type:"image/svg+xml"}]
+    };
+    const __blob = new Blob([JSON.stringify(__manifest)],{type:"application/manifest+json"});
+    const __link = document.createElement("link");
+    __link.rel = "manifest";
+    __link.href = URL.createObjectURL(__blob);
+    document.addEventListener("DOMContentLoaded",()=>document.head.appendChild(__link));
+  </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #0d0d0d; }
@@ -29,61 +46,8 @@
     .install-bar .ibtn { background: #4CAF50; color: #fff; border: none; border-radius: 10px; padding: 8px 16px; font-size: 13px; cursor: pointer; font-weight: 700; white-space: nowrap; }
     .install-bar .xbtn { background: none; border: none; color: #666; font-size: 20px; cursor: pointer; line-height: 1; }
   </style>
-
-  <script>
-    // Inline manifest for Android PWA
-    const manifestBlob = new Blob([JSON.stringify({
-  "name": "حاسبة استحقاقات - نفط الشمال",
-  "short_name": "نفط الشمال",
-  "description": "حاسبة استحقاقات شركة نفط الشمال",
-  "start_url": "./",
-  "display": "standalone",
-  "background_color": "#0d0d0d",
-  "theme_color": "#4CAF50",
-  "orientation": "portrait",
-  "lang": "ar",
-  "dir": "rtl",
-  "icons": [
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%234CAF50'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-size='100' fill='white'%3E%F0%9F%8F%9B%3C/text%3E%3C/svg%3E",
-      "sizes": "192x192",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%234CAF50'/%3E%3Ctext x='256' y='360' text-anchor='middle' font-size='280' fill='white'%3E%F0%9F%8F%9B%3C/text%3E%3C/svg%3E",
-      "sizes": "512x512",
-      "type": "image/svg+xml"
-    }
-  ]
-})], {type: 'application/json'});
-    const manifestUrl = URL.createObjectURL(manifestBlob);
-    const manifestLink = document.createElement('link');
-    manifestLink.rel = 'manifest';
-    manifestLink.href = manifestUrl;
-    document.head.appendChild(manifestLink);
-  </script>
 </head>
 <body>
-
-<div id="android-guide" style="display:none;position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#1a3a1a,#0a2a0a);border-bottom:2px solid #4CAF50;padding:14px 16px;font-family:'Noto Sans Arabic',sans-serif;direction:rtl;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-    <strong style="color:#4CAF50;font-size:15px;">📲 تثبيت التطبيق على أندرويد</strong>
-    <button onclick="document.getElementById('android-guide').style.display='none'" style="background:none;border:none;color:#888;font-size:20px;cursor:pointer;">✕</button>
-  </div>
-  <div style="color:#ccc;font-size:12px;line-height:2;">
-    1️⃣ افتح هذا الملف في <strong style="color:#4CAF50">متصفح Chrome</strong><br/>
-    2️⃣ اضغط على <strong style="color:#4CAF50">⋮ القائمة</strong> (ثلاث نقاط أعلى اليمين)<br/>
-    3️⃣ اختر <strong style="color:#4CAF50">"إضافة إلى الشاشة الرئيسية"</strong><br/>
-    4️⃣ اضغط <strong style="color:#4CAF50">إضافة</strong> ✅
-  </div>
-</div>
-<script>
-  // Show Android guide if on Android and not installed
-  if (/android/i.test(navigator.userAgent) && window.matchMedia && !window.matchMedia('(display-mode: standalone)').matches) {
-    setTimeout(() => { document.getElementById('android-guide').style.display = 'block'; }, 2000);
-  }
-</script>
-
 <div id="root"></div>
 
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -187,24 +151,56 @@ function App() {
     const totalYears = totalDays/365;
     const stageNum   = parseInt(stage), gradeNum=parseInt(grade);
     const BASE = getStageDays(gradeNum);
-    const reductionDays = calcReduction();
     const hDate = new Date(hireDate);
     const today = new Date(currentDate);
+
+    // تاريخ بداية المرحلة الحالية
     const stageStart = lastPromotionDate
       ? new Date(lastPromotionDate)
       : (() => { const d = new Date(hDate); d.setFullYear(hDate.getFullYear()+(stageNum-1)*2); return d; })();
+
+    // تاريخ آخر علاوة
+    const raiseBase = form.lastRaiseDate ? new Date(form.lastRaiseDate) : new Date(hireDate);
+
+    // الشكر والتقدير المؤهل للترفيع: فقط ما صدر بعد تاريخ آخر ترفيع وله تاريخ
+    const promoReductionDays = commendations.reduce((s,c) => {
+      if (!c.date) return s;
+      if (new Date(c.date) <= stageStart) return s;
+      return s + getEffectiveDays(c);
+    }, 0);
+
+    // الشكر والتقدير المؤهل للعلاوة: فقط ما صدر بعد تاريخ آخر علاوة وله تاريخ
+    const raiseReductionDays = commendations.reduce((s,c) => {
+      if (!c.date) return s;
+      if (new Date(c.date) <= raiseBase) return s;
+      return s + getEffectiveDays(c);
+    }, 0);
+
+    // مجموع كل الأيام (للعرض العام)
+    const reductionDays = promoReductionDays;
+
     const daysFromStageStart = Math.max(0, Math.ceil((today - stageStart) / 86400000));
     const daysRemainingOrig  = Math.max(0, BASE - daysFromStageStart);
-    const daysRemainingEff   = Math.max(0, daysRemainingOrig - reductionDays);
-    const overdueOrig = daysRemainingOrig===0 ? Math.max(0, Math.ceil((today - stageStart) / 86400000) - BASE) : 0;
-    const overdueEff  = daysRemainingEff===0  ? Math.max(0, Math.ceil((today - stageStart) / 86400000) - (BASE - reductionDays)) : 0;
-    const nextStageDateOriginal  = new Date(today); nextStageDateOriginal.setDate(today.getDate()+daysRemainingOrig);
-    const nextStageDateEffective = new Date(today); nextStageDateEffective.setDate(today.getDate()+daysRemainingEff);
-    const daysToNext     = daysRemainingEff;
+    const daysRemainingEff   = Math.max(0, daysRemainingOrig - promoReductionDays);
+    const overdueOrig = daysRemainingOrig===0 ? Math.max(0, daysFromStageStart - BASE) : 0;
+    const overdueEff  = daysRemainingEff===0  ? Math.max(0, daysFromStageStart - (BASE - promoReductionDays)) : 0;
+
+    // تاريخ الترفيع الأصلي والفعلي
+    const nextStageDateOriginal  = new Date(stageStart); nextStageDateOriginal.setDate(stageStart.getDate()+BASE);
+    const nextStageDateEffective = new Date(nextStageDateOriginal);
+    nextStageDateEffective.setDate(nextStageDateEffective.getDate() - promoReductionDays);
+
+    const daysToNext     = Math.max(0, Math.ceil((nextStageDateEffective - today)/86400000));
     const daysToNextOrig = daysRemainingOrig;
-    const nextStageDuration = fmtDur(Math.max(0,daysToNext));
+    const nextStageDuration = fmtDur(daysToNext);
     const nextStageNum = Math.min(stageNum+1,11);
     const annualRaise  = ANNUAL_RAISE[gradeNum]*1000;
+
+    // تاريخ العلاوة السنوية: آخر علاوة + سنة، مطروحاً منها الشكر والتقدير بعد آخر علاوة
+    const annualRaiseDateOrig = new Date(raiseBase);
+    annualRaiseDateOrig.setFullYear(raiseBase.getFullYear()+1);
+    const annualRaiseDate = new Date(annualRaiseDateOrig);
+    annualRaiseDate.setDate(annualRaiseDate.getDate() - raiseReductionDays);
     const baseSalary   = (SALARY_SCALE[gradeNum]?.[stageNum-1]||0)*1000;
     const certAllowance   = Math.round(baseSalary*(CERT_ALLOWANCES[certificate]||0)/100);
     const specialAllowance = Math.round(baseSalary*0.30);
@@ -243,7 +239,7 @@ function App() {
       duration,totalDays,totalYears,
       nextStageDateOriginal,nextStageDateEffective,nextStageDuration,
       nextStageNum,daysToNext,daysToNextOrig,reductionDays,effectiveDays,commByType,overdueOrig,overdueEff,
-      baseSalary,annualRaise,
+      baseSalary,annualRaise,annualRaiseDate,
       allowances:{cert:certAllowance,special:specialAllowance,danger:dangerAllowance,position:positionAllowance,
         marital:maritalAllowance,children:childrenAllowance,location:locationAllowance},
       totalAllowances,
@@ -305,6 +301,10 @@ function App() {
         <Row>
           <F label="التاريخ الحالي"><input style={{...S.input,textAlign:"center"}} type="date" value={form.currentDate} onChange={e=>update("currentDate",e.target.value)}/></F>
           <F label="تاريخ آخر ترفيع"><input style={{...S.input,textAlign:"center"}} type="date" value={form.lastPromotionDate} onChange={e=>update("lastPromotionDate",e.target.value)}/></F>
+        </Row>
+        <Row>
+          <F label="تاريخ آخر علاوة"><input style={{...S.input,textAlign:"center"}} type="date" value={form.lastRaiseDate||""} onChange={e=>update("lastRaiseDate",e.target.value)}/></F>
+          <F label=""><div/></F>
         </Row>
         <Row>
           <F label="الدرجة الوظيفية">
@@ -394,6 +394,15 @@ function App() {
               <div style={S.infoBox}><div style={S.infoLabel}>تاريخ التعيين</div><div style={S.infoValue}>{fmtDateStr(form.hireDate)}</div></div>
               <div style={S.infoBox}><div style={S.infoLabel}>سنوات الخدمة</div><div style={S.infoValue}>{(result.totalYears.toFixed(1))}</div></div>
             </div>
+            <div style={S.infoRow}>
+              <div style={{...S.infoBox,flex:1,border:"1px solid #FFD70044",background:"#1a1500"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div style={{...S.infoLabel,color:"#FFD700"}}>📅 العلاوة السنوية القادمة</div>
+                  <div style={{fontSize:11,color:"#FFD700",background:"#2a2000",borderRadius:6,padding:"2px 8px",border:"1px solid #FFD70044"}}>المرحلة القادمة: {result.nextStageNum}</div>
+                </div>
+                <div style={{...S.infoValue,color:"#FFD700",fontSize:16}}>{fmtDate(result.annualRaiseDate)}</div>
+              </div>
+            </div>
             {form.birthDate&&(()=>{
               const bd=new Date(form.birthDate);
               const retDate=new Date(bd);retDate.setFullYear(bd.getFullYear()+60);
@@ -405,8 +414,7 @@ function App() {
             })()}
             <div style={S.promotionCard}>
               <div style={S.promoHeader}><span style={{fontSize:24}}>🏆</span>
-                <div><div style={S.promoTitle}>استحقاق العلاوة والترفيع</div>
-                  <div style={S.promoSub}>المرحلة القادمة: {(result.nextStageNum)}</div></div>
+                <div><div style={S.promoTitle}>استحقاق الترفيع</div></div>
               </div>
               <div style={{display:"flex",gap:8,marginBottom:10}}>
                 <div style={{...S.promoDateBox,flex:1,opacity:0.55}}>
