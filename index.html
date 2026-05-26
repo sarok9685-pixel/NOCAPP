@@ -10,6 +10,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="NOC" />
   <title>حاسبة استحقاقات - شركة نفط الشمال</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&display=swap" rel="stylesheet"/>
   <script>
     const __manifest = {
       name: "حاسبة استحقاقات",
@@ -96,7 +97,6 @@ function App() {
   const [savedIndicator, setSavedIndicator] = useState(false);
   const [form, setForm] = useState(saved?.form || {
     name:"",employeeId:"",birthDate:"",hireDate:"",
-    currentDate:new Date().toISOString().split("T")[0],
     grade:"7",stage:"1",certificate:"bachelor",dangerLevel:"medium",
     position:"normal",maritalStatus:"single",children:"0",workLocation:"60",
     lastPromotionDate:"",
@@ -120,7 +120,7 @@ function App() {
   const clearData = () => {
     if (!window.confirm("هل تريد مسح جميع البيانات المحفوظة؟")) return;
     localStorage.removeItem(STORAGE_KEY);
-    setForm({ name:"",employeeId:"",birthDate:"",hireDate:"", currentDate:new Date().toISOString().split("T")[0],
+    setForm({ name:"",employeeId:"",birthDate:"",hireDate:"",
       grade:"7",stage:"1",certificate:"bachelor",dangerLevel:"medium",
       position:"normal",maritalStatus:"single",children:"0",workLocation:"60",lastPromotionDate:"",
       educationLevel:"3",productionRole:"3",quarterlyEval:"3",leadershipLevel:"0",serviceYears:"3", });
@@ -144,8 +144,9 @@ function App() {
   const calcReduction = () => commendations.reduce((s,c)=>s+getEffectiveDays(c),0);
 
   const calculate = () => {
-    const {hireDate,currentDate,grade,stage,certificate,dangerLevel,position,maritalStatus,children,workLocation,lastPromotionDate}=form;
+    const {hireDate,grade,stage,certificate,dangerLevel,position,maritalStatus,children,workLocation,lastPromotionDate}=form;
     if(!hireDate) return;
+    const currentDate = new Date().toISOString().split("T")[0];
     const totalDays  = Math.floor((new Date(currentDate)-new Date(hireDate))/86400000);
     const duration   = fmtDur(totalDays);
     const totalYears = totalDays/365;
@@ -283,7 +284,7 @@ function App() {
           <div style={{fontSize:34}}>🏛</div>
           <div>
             <div style={{...S.appTitle,fontSize:18}}>حاسبة استحقاقات</div>
-            <div style={S.appSubtitle}>من اعداد المهندس — محمد محي الدين عمر الجباري</div>
+            <div style={{...S.appSubtitle,fontFamily:"'Amiri',serif",fontSize:15}}>اعداد وتصميم / المهندس محمد محي الدين عمر الجباري</div>
           </div>
         </div>
       </div>
@@ -299,12 +300,8 @@ function App() {
           <F label="تاريخ التعيين"><input style={{...S.input,textAlign:"center"}} type="date" value={form.hireDate} onChange={e=>update("hireDate",e.target.value)}/></F>
         </Row>
         <Row>
-          <F label="التاريخ الحالي"><input style={{...S.input,textAlign:"center"}} type="date" value={form.currentDate} onChange={e=>update("currentDate",e.target.value)}/></F>
           <F label="تاريخ آخر ترفيع"><input style={{...S.input,textAlign:"center"}} type="date" value={form.lastPromotionDate} onChange={e=>update("lastPromotionDate",e.target.value)}/></F>
-        </Row>
-        <Row>
           <F label="تاريخ آخر علاوة"><input style={{...S.input,textAlign:"center"}} type="date" value={form.lastRaiseDate||""} onChange={e=>update("lastRaiseDate",e.target.value)}/></F>
-          <F label=""><div/></F>
         </Row>
         <Row>
           <F label="الدرجة الوظيفية">
@@ -406,7 +403,7 @@ function App() {
             {form.birthDate&&(()=>{
               const bd=new Date(form.birthDate);
               const retDate=new Date(bd);retDate.setFullYear(bd.getFullYear()+60);
-              const today=new Date(form.currentDate);
+              const today=new Date();
               const daysLeft=Math.ceil((retDate-today)/86400000);
               const isRetired=daysLeft<=0;
               const retDur=fmtDur(Math.max(0,daysLeft));
@@ -580,7 +577,7 @@ function App() {
             ):(()=>{
               const bd=new Date(form.birthDate);
               const retDate=new Date(bd);retDate.setFullYear(bd.getFullYear()+60);
-              const today=new Date(form.currentDate);
+              const today=new Date();
               const daysLeft=Math.ceil((retDate-today)/86400000);
               const isRetired=daysLeft<=0;
               const retDur=fmtDur(Math.max(0,daysLeft));
@@ -749,9 +746,17 @@ function App() {
         )}
       </div>
 
-      <div style={{textAlign:"center",padding:"20px 16px",fontSize:10,color:"#333",lineHeight:1.8}}>
-        © من اعداد المهندس /  محمد محي الدين عمر الجباري<br/>
-        الهاتف النقال 07701264441
+      <div style={{margin:"16px 12px 24px",background:"linear-gradient(135deg,#0d1a0d,#111)",border:"1px solid #2a3a2a",borderRadius:18,padding:"20px 18px",textAlign:"center",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,background:"radial-gradient(circle at 70% 30%,rgba(76,175,80,0.07) 0%,transparent 65%)",pointerEvents:"none"}}/>
+        <div style={{fontSize:36,marginBottom:10}}>👨‍💻</div>
+        <div style={{fontSize:11,color:"#4CAF50",letterSpacing:2,marginBottom:6,fontWeight:600}}>المطوّر</div>
+        <div style={{fontSize:22,fontWeight:700,color:"#e8e8e8",marginBottom:4,fontFamily:"'Amiri',serif",lineHeight:1.5}}>المهندس محمد محي الدين عمر الجباري</div>
+        <div style={{width:40,height:2,background:"linear-gradient(90deg,transparent,#4CAF50,transparent)",margin:"10px auto"}}/>
+        <a href="tel:07701264441" style={{display:"inline-flex",alignItems:"center",gap:8,background:"#1a3a1a",border:"1px solid #4CAF5066",borderRadius:10,padding:"8px 18px",color:"#8bc34a",fontSize:13,fontWeight:700,textDecoration:"none",marginTop:4}}>
+          <span>📞</span>
+          <span style={{direction:"ltr",letterSpacing:1}}>07701264441</span>
+        </a>
+        <div style={{fontSize:10,color:"#333",marginTop:14}}>© جميع الحقوق محفوظة</div>
       </div>
     </div>
   );
