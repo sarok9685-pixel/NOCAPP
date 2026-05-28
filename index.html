@@ -5,29 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#0d0d0d" />
   <meta name="description" content="حاسبة استحقاقات - شركة نفط الشمال" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="NOC" />
   <title>حاسبة استحقاقات - شركة نفط الشمال</title>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&display=swap" rel="stylesheet"/>
-  <script>
-    const __manifest = {
-      name: "حاسبة استحقاقات",
-      short_name: "NOC",
-      start_url: ".",
-      display: "standalone",
-      background_color: "#0d0d0d",
-      theme_color: "#0d0d0d",
-      orientation: "portrait",
-      icons: [{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230d0d0d'/><text y='.9em' font-size='80'>🏛</text></svg>",sizes:"any",type:"image/svg+xml"}]
-    };
-    const __blob = new Blob([JSON.stringify(__manifest)],{type:"application/manifest+json"});
-    const __link = document.createElement("link");
-    __link.rel = "manifest";
-    __link.href = URL.createObjectURL(__blob);
-    document.addEventListener("DOMContentLoaded",()=>document.head.appendChild(__link));
-  </script>
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #0d0d0d; }
@@ -249,8 +229,9 @@ function App() {
     {id:"service",   label:"الخدمة",              icon:"⏱"},
     {id:"commend",   label:"الشكر والتقدير",       icon:"🎖"},
     {id:"retire",    label:"تاريخ التقاعد",        icon:"🎓"},
-    {id:"salary",    label:"شهادة شكر وتقدير",     icon:"📜"},
     {id:"ration",    label:"إيقاف البطاقة التموينية", icon:"🛒"},
+    {id:"salary",    label:"شهادة شكر وتقدير",     icon:"📜"},
+    {id:"developer", label:"المطوّر",              icon:"👨‍💻"},
   ];
 
   return (
@@ -270,7 +251,7 @@ function App() {
           <div style={{fontSize:34}}>🏛</div>
           <div>
             <div style={{...S.appTitle,fontSize:18}}>حاسبة استحقاقات</div>
-            <div style={{...S.appSubtitle,fontFamily:"'Amiri',serif",fontSize:15}}>اعداد وتصميم / المهندس محمد محي الدين عمر الجباري</div>
+
           </div>
         </div>
       </div>
@@ -724,6 +705,21 @@ function App() {
           </div>
         )}
 
+        {tab==="developer"&&(
+          <div style={{margin:"24px 12px",background:"linear-gradient(135deg,#0d1a0d,#111)",border:"1px solid #2a3a2a",borderRadius:18,padding:"32px 20px",textAlign:"center",position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,background:"radial-gradient(circle at 50% 30%,rgba(76,175,80,0.10) 0%,transparent 65%)",pointerEvents:"none"}}/>
+            <div style={{fontSize:56,marginBottom:14}}>👨‍💻</div>
+            <div style={{fontSize:11,color:"#4CAF50",letterSpacing:3,marginBottom:8,fontWeight:600}}>المطوّر</div>
+            <div style={{fontSize:22,fontWeight:700,color:"#e8e8e8",fontFamily:"'Amiri',serif",lineHeight:1.6,marginBottom:16}}>المهندس محمد محي الدين عمر الجباري</div>
+            <div style={{width:60,height:2,background:"linear-gradient(90deg,transparent,#4CAF50,transparent)",margin:"0 auto 20px"}}/>
+            <a href="tel:07701264441" style={{display:"inline-flex",alignItems:"center",gap:10,background:"#1a3a1a",border:"1px solid #4CAF5066",borderRadius:12,padding:"12px 24px",color:"#8bc34a",fontSize:15,fontWeight:700,textDecoration:"none"}}>
+              <span>📞</span>
+              <span style={{direction:"ltr",letterSpacing:1.5}}>07701264441</span>
+            </a>
+            <div style={{fontSize:11,color:"#333",marginTop:20}}>© جميع الحقوق محفوظة</div>
+          </div>
+        )}
+
         {!result&&!form.hireDate&&(
           <div style={{textAlign:"center",padding:"60px 20px",color:"#444"}}>
             <div style={{fontSize:48}}>📅</div>
@@ -732,18 +728,6 @@ function App() {
         )}
       </div>
 
-      <div style={{margin:"16px 12px 24px",background:"linear-gradient(135deg,#0d1a0d,#111)",border:"1px solid #2a3a2a",borderRadius:18,padding:"20px 18px",textAlign:"center",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,background:"radial-gradient(circle at 70% 30%,rgba(76,175,80,0.07) 0%,transparent 65%)",pointerEvents:"none"}}/>
-        <div style={{fontSize:36,marginBottom:10}}>👨‍💻</div>
-        <div style={{fontSize:11,color:"#4CAF50",letterSpacing:2,marginBottom:6,fontWeight:600}}>المطوّر</div>
-        <div style={{fontSize:22,fontWeight:700,color:"#e8e8e8",marginBottom:4,fontFamily:"'Amiri',serif",lineHeight:1.5}}>المهندس محمد محي الدين عمر الجباري</div>
-        <div style={{width:40,height:2,background:"linear-gradient(90deg,transparent,#4CAF50,transparent)",margin:"10px auto"}}/>
-        <a href="tel:07701264441" style={{display:"inline-flex",alignItems:"center",gap:8,background:"#1a3a1a",border:"1px solid #4CAF5066",borderRadius:10,padding:"8px 18px",color:"#8bc34a",fontSize:13,fontWeight:700,textDecoration:"none",marginTop:4}}>
-          <span>📞</span>
-          <span style={{direction:"ltr",letterSpacing:1}}>07701264441</span>
-        </a>
-        <div style={{fontSize:10,color:"#333",marginTop:14}}>© جميع الحقوق محفوظة</div>
-      </div>
     </div>
   );
 }
@@ -816,21 +800,6 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
 </script>
 
-<script>
-// Service Worker
-const SW_CODE = `
-const CACHE='noc-v1';
-const FILES=['/'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)));self.skipWaiting();});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
-self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('/'))));});
-`;
 
-if ('serviceWorker' in navigator) {
-  const blob = new Blob([SW_CODE], {type:'application/javascript'});
-  const swUrl = URL.createObjectURL(blob);
-  navigator.serviceWorker.register(swUrl).catch(()=>{});
-}
-</script>
 </body>
 </html>
